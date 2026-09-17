@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operations Command Center</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#050a18;--s1:#0c1425;--s2:#131d35;--bd:#1c2d4a;--tx:#e8ecf4;--mt:#6b7fa3;--bl:#3b82f6;--am:#f59e0b;--gn:#10b981;--rd:#ef4444}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);overflow:hidden;height:100vh;width:100vw}
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 28px;background:linear-gradient(135deg,#080e20,#111b33);border-bottom:1px solid var(--bd);height:52px}
+.hdr-l{display:flex;align-items:center;gap:12px}
+.logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff}
+.hdr-t{font-size:16px;font-weight:800;letter-spacing:-.5px}
+.hdr-st{font-size:9px;color:var(--mt);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.live{display:flex;align-items:center;gap:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);padding:4px 12px;border-radius:16px;font-size:10px;font-weight:700;color:#10b981}
+.ldot{width:7px;height:7px;border-radius:50%;background:#10b981;animation:bl 1.4s infinite}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.2}}
+.clk{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.clk-d{font-size:10px;color:var(--mt);text-align:right}
+.dots{display:flex;gap:5px;align-items:center}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--bd);cursor:pointer;transition:.3s}
+.dot.on{width:24px;border-radius:4px}
+.dot.d0.on{background:var(--tx)}.dot.d1.on{background:var(--bl)}.dot.d2.on{background:var(--am)}.dot.d3.on{background:var(--gn)}.dot.d4.on{background:var(--rd)}
+.slider{height:calc(100vh - 52px);overflow:hidden;position:relative}
+.track{display:flex;height:100%;transition:transform .7s cubic-bezier(.4,0,.2,1);width:500vw}
+.slide{width:100vw;height:100%;flex-shrink:0;padding:16px 28px;overflow:hidden}
+.ogrid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;height:100%}
+.oc{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:18px 22px;display:flex;flex-direction:column;position:relative;overflow:hidden;cursor:pointer;transition:transform .2s}
+.oc:hover{transform:scale(1.005)}
+.oc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0}
+.oc.bl::before{background:var(--bl)}.oc.am::before{background:var(--am)}.oc.gn::before{background:var(--gn)}.oc.rd::before{background:var(--rd)}
+.oc-top{display:flex;align-items:center;justify-content:space-between}
+.oc-ic{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.oc.bl .oc-ic{background:rgba(59,130,246,.1)}.oc.am .oc-ic{background:rgba(245,158,11,.1)}.oc.gn .oc-ic{background:rgba(16,185,129,.1)}.oc.rd .oc-ic{background:rgba(239,68,68,.1)}
+.oc-n{font-size:48px;font-weight:900;line-height:1;letter-spacing:-3px}
+.oc.bl .oc-n{color:var(--bl)}.oc.am .oc-n{color:var(--am)}.oc.gn .oc-n{color:var(--gn)}.oc.rd .oc-n{color:var(--rd)}
+.oc-lb{font-size:13px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:.5px}
+.oc-sb{font-size:11px;color:var(--mt);margin-top:3px}
+.oc-ml{margin-top:auto;padding-top:10px;border-top:1px solid var(--bd)}
+.oc-mr{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid rgba(28,45,74,.3)}
+.oc-mr:last-child{border:none}
+.oc-mn{font-weight:600;max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.oc-mv{color:var(--mt);font-size:11px}
+.dh{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.di{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.dt{font-size:20px;font-weight:800;letter-spacing:-.5px}
+.dc{font-size:12px;padding:3px 12px;border-radius:6px;font-weight:700;margin-left:auto}
+.tw{overflow:auto;max-height:calc(100vh - 120px);border-radius:10px;border:1px solid var(--bd)}
+table{width:100%;border-collapse:collapse}
+thead th{background:var(--s2);padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--mt);text-transform:uppercase;letter-spacing:.5px;position:sticky;top:0;z-index:10}
+tbody td{padding:10px 14px;font-size:13px;font-weight:500;border-bottom:1px solid rgba(28,45,74,.3)}
+tbody tr:hover{background:rgba(255,255,255,.015)}
+.ch{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+.ch.ip{background:rgba(245,158,11,.1);color:#f59e0b}.ch.pd{background:rgba(239,68,68,.1);color:#ef4444}.ch.cp{background:rgba(16,185,129,.1);color:#10b981}
+.cd{width:6px;height:6px;border-radius:50%}.ch.ip .cd{background:#f59e0b}.ch.pd .cd{background:#ef4444;animation:bl 1.4s infinite}
+.db{font-weight:800;font-size:14px;padding:3px 10px;border-radius:6px;display:inline-block}
+.db.ok{background:rgba(16,185,129,.1);color:#10b981}.db.wr{background:rgba(245,158,11,.1);color:#f59e0b}.db.dn{background:rgba(239,68,68,.1);color:#ef4444}
+.em{padding:40px;text-align:center;color:var(--mt)}.em i{font-size:36px;display:block;margin-bottom:10px;opacity:.3;font-style:normal}
+.tb{position:fixed;bottom:0;left:0;right:0;height:3px;background:var(--s2);z-index:200}
+.tf{height:100%;width:0%;transition:width 1s linear}
+.tf.s0{background:linear-gradient(90deg,#8b5cf6,#3b82f6)}.tf.s1{background:var(--bl)}.tf.s2{background:var(--am)}.tf.s3{background:var(--gn)}.tf.s4{background:var(--rd)}
+.ld{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity .5s}
+.ld.h{opacity:0;pointer-events:none}
+.sp{width:40px;height:40px;border:3px solid var(--bd);border-top-color:var(--bl);border-radius:50%;animation:sn .7s linear infinite}
+@keyframes sn{to{transform:rotate(360deg)}}
+.ld p{margin-top:14px;color:var(--mt);font-size:12px}
+</style>
+</head>
+<body>
+<div class="ld" id="ld"><div class="sp"></div><p>Loading live data from Google Sheets...</p></div>
+<div class="hdr">
+<div class="hdr-l"><div class="logo">⚡</div><div><div class="hdr-t">Operations Command Center</div><div class="hdr-st">Live TV Dashboard</div></div></div>
+<div style="display:flex;align-items:center;gap:16px">
+<div class="dots" id="dots"><div class="dot d0 on" onclick="go(0)"></div><div class="dot d1" onclick="go(1)"></div><div class="dot d2" onclick="go(2)"></div><div class="dot d3" onclick="go(3)"></div><div class="dot d4" onclick="go(4)"></div></div>
+<div class="live"><span class="ldot"></span>LIVE</div>
+</div>
+<div style="display:flex;align-items:center;gap:20px">
+<div><div class="clk" id="clk">--:--</div><div class="clk-d" id="clkd">--</div></div>
+</div>
+</div>
+<div class="slider"><div class="track" id="trk">
+<div class="slide" id="s0"><div class="ogrid">
+<div class="oc bl" onclick="go(1)"><div class="oc-top"><div class="oc-ic">📦</div><div class="oc-n" id="n0">—</div></div><div class="oc-lb">Today's Dispatches</div><div class="oc-sb" id="sb0"></div><div class="oc-ml" id="ml0"></div></div>
+<div class="oc am" onclick="go(2)"><div class="oc-top"><div class="oc-ic">📋</div><div class="oc-n" id="n1">—</div></div><div class="oc-lb">Pending Site Visits</div><div class="oc-sb" id="sb1"></div><div class="oc-ml" id="ml1"></div></div>
+<div class="oc gn" onclick="go(3)"><div class="oc-top"><div class="oc-ic">🔧</div><div class="oc-n" id="n2">—</div></div><div class="oc-lb">In-Progress Installations</div><div class="oc-sb" id="sb2"></div><div class="oc-ml" id="ml2"></div></div>
+<div class="oc rd" onclick="go(4)"><div class="oc-top"><div class="oc-ic">⚙️</div><div class="oc-n" id="n3">—</div></div><div class="oc-lb">In-Progress Machines</div><div class="oc-sb" id="sb3"></div><div class="oc-ml" id="ml3"></div></div>
+</div></div>
+<div class="slide" id="s1"><div class="dh"><div class="di" style="background:rgba(59,130,246,.1)">📦</div><div class="dt">Today's Dispatches</div><div class="dc" id="dc1" style="background:rgba(59,130,246,.1);color:var(--bl)">0</div></div><div class="tw"><table><thead><tr><th>#</th><th>Client Name</th><th>Sale Order</th><th>DN Number</th><th>Remarks</th></tr></thead><tbody id="t1"></tbody></table></div></div>
+<div class="slide" id="s2"><div class="dh"><div class="di" style="background:rgba(245,158,11,.1)">📋</div><div class="dt">Pending Site Visits</div><div class="dc" id="dc2" style="background:rgba(245,158,11,.1);color:var(--am)">0</div></div><div class="tw"><table><thead><tr><th>#</th><th>Client Name</th><th>Requested Date</th><th>Visit Type</th><th>Status</th></tr></thead><tbody id="t2"></tbody></table></div></div>
+<div class="slide" id="s3"><div class="dh"><div class="di" style="background:rgba(16,185,129,.1)">🔧</div><div class="dt">In-Progress Installations</div><div class="dc" id="dc3" style="background:rgba(16,185,129,.1);color:var(--gn)">0</div></div><div class="tw"><table><thead><tr><th>#</th><th>Date</th><th>Client Name</th><th>Staff</th><th>Qty</th><th>Remarks</th><th>Status</th></tr></thead><tbody id="t3"></tbody></table></div></div>
+<div class="slide" id="s4"><div class="dh"><div class="di" style="background:rgba(239,68,68,.1)">⚙️</div><div class="dt">In-Progress Machine Jobs</div><div class="dc" id="dc4" style="background:rgba(239,68,68,.1);color:var(--rd)">0</div></div><div class="tw"><table><thead><tr><th>#</th><th>Client Name</th><th>Machine</th><th>Operator</th><th>Days</th><th>Status</th></tr></thead><tbody id="t4"></tbody></table></div></div>
+</div></div>
+<div class="tb"><div class="tf s0" id="tf"></div></div>
+
+<script>
+const BASE="https://docs.google.com/spreadsheets/d/e/2PACX-1vTvBER2_iJqoowXdOsXDWmHz3lOd2uJUz9K8q4nrlTSgHMCZeb9QBS9nCG6r0SN0apl1nbIlMKUt46h/pub";
+const SHEETS={
+  delivery:BASE+"?gid=0&single=true&output=csv",
+  siteWork:BASE+"?gid=1491806736&single=true&output=csv",
+  siteVisit:BASE+"?gid=1835648226&single=true&output=csv",
+  operations:BASE+"?gid=1402558379&single=true&output=csv"
+};
+const SLIDE_SEC=120;
+let cur=0,tmr=0;
+let D={disp:[],visits:[],installs:[],machines:[]};
+
+// Clock
+function tick(){const n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString('en-US',{hour12:!0,hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('clkd').textContent=n.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'short',year:'numeric'})}
+setInterval(tick,1000);tick();
+
+// Slider
+function go(i){cur=i;tmr=0;document.getElementById('trk').style.transform=`translateX(-${i*100}vw)`;document.querySelectorAll('.dot').forEach((d,x)=>{d.classList.toggle('on',x===i)});const f=document.getElementById('tf');f.className='tf s'+i;f.style.width='0%'}
+setInterval(()=>{tmr++;document.getElementById('tf').style.width=(tmr/SLIDE_SEC*100)+'%';if(tmr>=SLIDE_SEC)go((cur+1)%5)},1000);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')go((cur+1)%5);else if(e.key==='ArrowLeft')go((cur-1+5)%5);else if(e.key>='1'&&e.key<='5')go(+e.key-1)});
+
+// Fetch CSV
+function fetchCSV(url){
+  return new Promise((res,rej)=>{
+    Papa.parse(url,{download:true,skipEmptyLines:true,complete:r=>res(r.data),error:e=>rej(e)});
+  });
+}
+
+function isToday(dateStr){
+  if(!dateStr)return false;
+  const now=new Date();
+  const t=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const s=String(dateStr).trim();
+  // Handle multiple date formats
+  // Format: 2026-09-17 or 9/17/2026 or 17/09/2026 or 17-Sep-2026
+  if(s.includes(t))return true;
+  const d=new Date(s);
+  if(!isNaN(d)){
+    const ds=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return ds===t;
+  }
+  // Try DD/MM/YYYY
+  const p=s.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if(p){
+    const y=p[3],m=p[2].padStart(2,'0'),dd=p[1].padStart(2,'0');
+    if(`${y}-${m}-${dd}`===t)return true;
+    if(`${y}-${dd}-${m}`===t)return true;
+  }
+  return false;
+}
+
+function esc(v){if(v==null)return'';const d=document.createElement('div');d.textContent=String(v).trim();return d.innerHTML}
+
+async function loadData(){
+  try{
+    const[del,sw,sv,op]=await Promise.all([
+      fetchCSV(SHEETS.delivery),
+      fetchCSV(SHEETS.siteWork),
+      fetchCSV(SHEETS.siteVisit),
+      fetchCSV(SHEETS.operations)
+    ]);
+
+    // 1. Today's Dispatches — col B(1)=Date, C(2)=Client, D(3)=SaleOrder, E(4)=Remarks, F(5)=DN
+    D.disp=[];
+    del.slice(1).forEach(r=>{
+      if(r.length>1 && isToday(r[1])){
+        D.disp.push({client:r[2]||'',so:r[3]||'',dn:r[5]||'',rem:r[4]||''});
+      }
+    });
+
+    // 2. Pending Site Visits — col D(3)=Client, E(4)=ReqDate, G(6)=VisitType, H(7)=Status
+    D.visits=[];
+    sv.slice(1).forEach(r=>{
+      if(r.length>7 && String(r[7]).trim().toLowerCase()==='pending'){
+        D.visits.push({client:r[3]||'',date:r[4]||'',type:r[6]||'',status:'Pending'});
+      }
+    });
+
+    // 3. In-Progress Installations — col B(1)=Date, C(2)=Client, D(3)=SO, F(5)=Staff, G(6)=Qty, H(7)=Unit, I(8)=Remarks, J(9)=Status
+    D.installs=[];
+    sw.slice(1).forEach(r=>{
+      if(r.length>9 && String(r[9]).trim().toLowerCase().includes('in progress')){
+        D.installs.push({date:r[1]||'',client:r[2]||'',staff:r[5]||'',qty:(r[6]||'')+' '+(r[7]||''),rem:r[8]||'',status:'In Progress'});
+      }
+    });
+
+    // 4. In-Progress Machines — col A(0)=Start, B(1)=Client, C(2)=Machine, D(3)=SO, E(4)=Operator, G(6)=Status, H(7)=Days
+    D.machines=[];
+    op.slice(1).forEach(r=>{
+      if(r.length>6 && String(r[6]).trim().toLowerCase().includes('in progress')){
+        D.machines.push({client:r[1]||'',machine:r[2]||'',operator:r[4]||'',days:parseInt(r[7])||0,status:'In Progress'});
+      }
+    });
+
+    render();
+    document.getElementById('ld').classList.add('h');
+  }catch(e){
+    console.error('Load error:',e);
+    document.getElementById('ld').innerHTML='<p style="color:#ef4444">Error loading data. Check sheet is published.</p>';
+  }
+}
+
+function render(){
+  // KPIs
+  document.getElementById('n0').textContent=D.disp.length;
+  document.getElementById('n1').textContent=D.visits.length;
+  document.getElementById('n2').textContent=D.installs.length;
+  document.getElementById('n3').textContent=D.machines.length;
+  document.getElementById('sb0').textContent='Dispatched today';
+  document.getElementById('sb1').textContent='Awaiting action';
+  document.getElementById('sb2').textContent='Active site work';
+  document.getElementById('sb3').textContent='Machines deployed';
+
+  // Mini lists
+  ml('ml0',D.disp.slice(0,4).map(r=>({n:r.client,v:r.dn})));
+  ml('ml1',D.visits.slice(0,4).map(r=>({n:r.client,v:r.date})));
+  ml('ml2',D.installs.slice(0,4).map(r=>({n:r.client,v:r.qty})));
+  ml('ml3',D.machines.slice(0,4).map(r=>({n:r.client,v:r.machine})));
+
+  // Counts
+  document.getElementById('dc1').textContent=D.disp.length+' items';
+  document.getElementById('dc2').textContent=D.visits.length+' items';
+  document.getElementById('dc3').textContent=D.installs.length+' items';
+  document.getElementById('dc4').textContent=D.machines.length+' items';
+
+  // Tables
+  tb('t1',D.disp,r=>`<td style="font-weight:700">${esc(r.client)}</td><td><code style="background:var(--s2);padding:2px 8px;border-radius:4px">${esc(r.so)}</code></td><td style="font-weight:700;color:var(--bl)">${esc(r.dn)}</td><td>${esc(r.rem)}</td>`,5,'📦','No dispatches today');
+  tb('t2',D.visits,r=>`<td style="font-weight:700">${esc(r.client)}</td><td>${esc(r.date)}</td><td>${esc(r.type)}</td><td><span class="ch pd"><span class="cd"></span>Pending</span></td>`,5,'📋','No pending visits');
+  tb('t3',D.installs,r=>`<td>${esc(r.date)}</td><td style="font-weight:700">${esc(r.client)}</td><td>${esc(r.staff)}</td><td>${esc(r.qty)}</td><td>${esc(r.rem)}</td><td><span class="ch ip"><span class="cd"></span>In Progress</span></td>`,7,'🔧','No in-progress installations');
+  tb('t4',D.machines,r=>{const d=r.days;const c=d>7?'dn':d>3?'wr':'ok';return`<td style="font-weight:700">${esc(r.client)}</td><td><span style="background:var(--s2);padding:4px 10px;border-radius:6px;font-weight:700;font-size:12px">${esc(r.machine)}</span></td><td>${esc(r.operator)}</td><td><span class="db ${c}">${d}d</span></td><td><span class="ch ip"><span class="cd"></span>In Progress</span></td>`},6,'⚙️','No in-progress machines');
+}
+
+function tb(id,rows,fn,cols,ic,msg){
+  const el=document.getElementById(id);
+  if(!rows.length){el.innerHTML=`<tr><td colspan="${cols}"><div class="em"><i>${ic}</i>${msg}</div></td></tr>`;return}
+  el.innerHTML=rows.map((r,i)=>`<tr><td style="color:var(--mt);font-weight:700">${i+1}</td>${fn(r)}</tr>`).join('');
+}
+
+function ml(id,items){
+  const el=document.getElementById(id);
+  if(!items.length){el.innerHTML='<div style="color:var(--mt);font-size:11px;padding:6px 0">No items</div>';return}
+  el.innerHTML=items.map(i=>`<div class="oc-mr"><span class="oc-mn">${esc(i.n)}</span><span class="oc-mv">${esc(i.v)}</span></div>`).join('');
+}
+
+// Init + auto refresh every 60s
+loadData();
+setInterval(loadData,60000);
+</script>
+</body>
+</html>
