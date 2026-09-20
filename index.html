@@ -97,11 +97,11 @@ var CFG=[
   {name:"Delivery & Operations",sheet:"Delivery & Operations Hub Dashboard",icon:"📦",cls:"c0",
    heads:["Date","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,defF:0,color:"59,130,246"},
   {name:"Site Work Entry",sheet:"Site Work Entry",icon:"🔧",cls:"c1",
-   heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:0,color:"16,185,129"},
+   heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:0,color:"16,185,129",statusCol:9,statusVal:"in progress"},
   {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",icon:"📋",cls:"c2",
    heads:["Date","Requested By","Client","Visit Status","Tech Drawing","Client Approval"],cols:[0,2,3,7,14,16],dateCol:0,defF:0,color:"245,158,11"},
   {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",icon:"⚙️",cls:"c3",
-   heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:0,color:"239,68,68"},
+   heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:0,color:"239,68,68",statusCol:6,statusVal:"in progress"},
   {name:"Master Inventory",sheet:"master inventory catalog",icon:"📊",cls:"c4",
    heads:["Date","Client","Sale Order","Item No","Person","Qty"],cols:[0,1,2,3,4,5],dateCol:0,defF:0,color:"139,92,246"},
   {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",icon:"🚚",cls:"c5",
@@ -122,8 +122,8 @@ document.getElementById('dots').innerHTML=dh;
 // Build overview
 document.getElementById('ogrid').innerHTML=CFG.map(function(c,i){
   return'<div class="oc '+c.cls+'" onclick="go('+(i+1)+')">'
-    +'<div class="oc-top"><div class="oc-ic">'+c.icon+'</div><div class="oc-n" id="n'+i+'">—</div></div>'
-    +'<div class="oc-lb">'+c.name+'</div><div class="oc-sb" id="sb'+i+'"></div>'
+    +'<div class="oc-top"><div class="oc-ic">'+c.icon+'</div></div>'
+    +'<div class="oc-lb" style="font-size:14px;margin-top:8px">'+c.name+'</div><div class="oc-sb" id="sb'+i+'"></div>'
     +'<div class="oc-ml" id="ml'+i+'"></div></div>';
 }).join('');
 
@@ -176,7 +176,11 @@ function chip(v){
 
 function getRows(idx){
   var c=CFG[idx],data=raw[idx];if(!data||data.length<2)return[];
-  return data.slice(1).filter(function(r){return r&&r.length>1&&r[0]!==''&&inRange(r[c.dateCol],filters[idx])});
+  return data.slice(1).filter(function(r){
+    if(!r||r.length<2||r[0]==='')return false;
+    if(c.statusCol!==undefined){var st=String(r[c.statusCol]||'').trim().toLowerCase();if(st.indexOf(c.statusVal)===-1)return false}
+    return inRange(r[c.dateCol],filters[idx]);
+  });
 }
 
 function renderSection(idx){
@@ -201,8 +205,7 @@ function renderAll(){
   var labels=['Today','Today','Today','Active','Today','This Week'];
   CFG.forEach(function(c,i){
     var rows=getRows(i);
-    document.getElementById('n'+i).textContent=rows.length;
-    document.getElementById('sb'+i).textContent=labels[i];
+    document.getElementById('sb'+i).textContent=labels[i]+' — '+rows.length+' items';
     var el=document.getElementById('ml'+i);
     var items=rows.slice(0,3);
     el.innerHTML=items.length?items.map(function(r){
