@@ -182,8 +182,9 @@ function getRows(idx){
   var c=CFG[idx],data=raw[idx];if(!data||data.length<2)return[];
   return data.slice(1).filter(function(r){
     if(!r||r.length<2||r[0]==='')return false;
-    if(c.statusCol!==undefined){var st=String(r[c.statusCol]||'').trim().toLowerCase();if(st.indexOf(c.statusVal)===-1)return false}
-    return inRange(r[c.dateCol],filters[idx]);
+    var f=filters[idx];
+    if(c.statusCol!==undefined&&f===3){var st=String(r[c.statusCol]||'').trim().toLowerCase();if(st.indexOf(c.statusVal)===-1)return false}
+    return inRange(r[c.dateCol],f);
   });
 }
 
