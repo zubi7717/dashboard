@@ -94,18 +94,18 @@ var SID="1iN9bWTjjNDFuwchaw1PikmbquIPhTcmCByGtccf4IWY";
 var TOTAL=7,SLIDE_SEC=120,cur=0,tmr=0;
 
 var CFG=[
-  {name:"Delivery & Operations",sheet:"Delivery & Operations Hub Dashboard",icon:"📦",cls:"c0",
+  {name:"Delivery & Operations",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",
    heads:["Date","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,defF:0,color:"59,130,246"},
-  {name:"Site Work Entry",sheet:"Site Work Entry",icon:"🔧",cls:"c1",
+  {name:"Site Work Entry",sheet:"Site Work Entry",gid:1491806736,icon:"🔧",cls:"c1",
    heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:3,color:"16,185,129",statusCol:9,statusVal:"in progress",miniCols:[2,1]},
-  {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",icon:"📋",cls:"c2",
+  {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",gid:1835648226,icon:"📋",cls:"c2",
    heads:["Date","Requested By","Client","Visit Status","Tech Drawing","Client Approval"],cols:[0,2,3,7,14,16],dateCol:0,defF:0,color:"245,158,11"},
-  {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",icon:"⚙️",cls:"c3",
+  {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",
    heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
-  {name:"Master Inventory",sheet:"master inventory catalog",icon:"📊",cls:"c4",
+  {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",
    heads:["Date","Client","Sale Order","Item No","Person","Qty"],cols:[0,1,2,3,4,5],dateCol:0,defF:0,color:"139,92,246"},
-  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",icon:"🚚",cls:"c5",
-   heads:["Client Name","Sale Order","Expected Date","Remarks"],cols:[1,2,3,4],dateCol:3,defF:1,color:"6,182,212"}
+  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",
+   heads:["Client Name","Sale Order","Expected Date","Remarks"],cols:[1,2,3,4],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3]}
 ];
 
 var filters=CFG.map(function(c){return c.defF});
@@ -130,8 +130,7 @@ document.getElementById('ogrid').innerHTML=CFG.map(function(c,i){
 // Build detail slides
 CFG.forEach(function(c,i){
   var fl;
-  if(c.statusCol!==undefined){fl=[['All',3],['Weekly',1],['Monthly',2]]}
-  else if(i===5){fl=[['Weekly',1],['Monthly',2]]}
+  if(c.statusCol!==undefined||i===5){fl=[['All',3],['Weekly',1],['Monthly',2]]}
   else{fl=[['Daily',0],['Weekly',1],['Monthly',2]]}
   document.getElementById('sl'+(i+1)).innerHTML=
     '<div class="dh"><div class="di" style="background:rgba('+c.color+',.1)">'+c.icon+'</div>'
@@ -149,7 +148,7 @@ document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==
 
 function sf(s,v,btn){filters[s]=v;btn.parentElement.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');renderSection(s)}
 
-function sheetURL(name){return"https://docs.google.com/spreadsheets/d/"+SID+"/gviz/tq?tqx=out:csv&sheet="+encodeURIComponent(name)+"&t="+Date.now()}
+function sheetURL(name,gid){return"https://docs.google.com/spreadsheets/d/"+SID+"/gviz/tq?tqx=out:csv&gid="+gid+"&t="+Date.now()}
 
 function parseCSV(t){var rows=[],row=[],cell='',q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row);row=[];cell=''}else if(c!=='\r')cell+=c}}if(cell||row.length){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row)}return rows}
 
@@ -207,7 +206,7 @@ function renderSection(idx){
 }
 
 function renderAll(){
-  var labels=['Today','Active','Today','Active','Today','This Week'];
+  var labels=['Today','Active','Today','Active','Today','All'];
   CFG.forEach(function(c,i){
     var rows=getRows(i);
     document.getElementById('sb'+i).textContent=labels[i]+' — '+rows.length+' items';
@@ -225,7 +224,7 @@ function renderAll(){
 async function loadData(){
   try{
     document.getElementById('ldt').textContent='Fetching...';
-    var results=await Promise.all(CFG.map(function(c){return fetch(sheetURL(c.sheet)).then(function(r){return r.text()})}));
+    var results=await Promise.all(CFG.map(function(c){return fetch(sheetURL(c.sheet,c.gid)).then(function(r){return r.text()})}));
     results.forEach(function(t,i){raw[i]=parseCSV(t)});
     renderAll();
     document.getElementById('ld').classList.add('h');
