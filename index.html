@@ -210,8 +210,10 @@ function renderAll(){
   var labels=['Today','Active','Today','Active','Today','All'];
   CFG.forEach(function(c,i){
     var rows=getRows(i);
+    if(i===4){renderSection(i);return;}
     document.getElementById('sb'+i).textContent=labels[i]+' — '+rows.length+' items';
     var el=document.getElementById('ml'+i);
+    if(!el){renderSection(i);return;}
     var items=rows.slice(0,3);
     el.innerHTML=items.length?items.map(function(r){
       var nameCol=c.miniCols?c.miniCols[0]:c.cols[1];
