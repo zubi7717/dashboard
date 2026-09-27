@@ -29,7 +29,6 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .oc::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0}
 .oc-top{display:flex;align-items:center;justify-content:space-between}
 .oc-ic{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
-.oc-n{font-size:42px;font-weight:900;line-height:1;letter-spacing:-2px}
 .oc-lb{font-size:12px;font-weight:700;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
 .oc-sb{font-size:10px;color:var(--mt);margin-top:2px}
 .oc-ml{margin-top:auto;padding-top:6px;border-top:1px solid var(--bd)}
@@ -37,12 +36,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .oc-mr:last-child{border:none}
 .oc-mn{font-weight:600;max-width:65%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .oc-mv{color:var(--mt);font-size:10px}
-.c0::before{background:var(--c0)}.c0 .oc-ic{background:rgba(59,130,246,.1)}.c0 .oc-n{color:var(--c0)}
-.c1::before{background:var(--c1)}.c1 .oc-ic{background:rgba(16,185,129,.1)}.c1 .oc-n{color:var(--c1)}
-.c2::before{background:var(--c2)}.c2 .oc-ic{background:rgba(245,158,11,.1)}.c2 .oc-n{color:var(--c2)}
-.c3::before{background:var(--c3)}.c3 .oc-ic{background:rgba(239,68,68,.1)}.c3 .oc-n{color:var(--c3)}
-.c4::before{background:var(--c4)}.c4 .oc-ic{background:rgba(139,92,246,.1)}.c4 .oc-n{color:var(--c4)}
-.c5::before{background:var(--c5)}.c5 .oc-ic{background:rgba(6,182,212,.1)}.c5 .oc-n{color:var(--c5)}
+.c0::before{background:var(--c0)}.c0 .oc-ic{background:rgba(59,130,246,.1)}
+.c1::before{background:var(--c1)}.c1 .oc-ic{background:rgba(16,185,129,.1)}
+.c2::before{background:var(--c2)}.c2 .oc-ic{background:rgba(245,158,11,.1)}
+.c3::before{background:var(--c3)}.c3 .oc-ic{background:rgba(239,68,68,.1)}
+.c4::before{background:var(--c4)}.c4 .oc-ic{background:rgba(139,92,246,.1)}
+.c5::before{background:var(--c5)}.c5 .oc-ic{background:rgba(6,182,212,.1)}
 .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-shrink:0}
 .di{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .dt{font-size:22px;font-weight:900;letter-spacing:-.5px}
@@ -71,13 +70,11 @@ tbody tr:hover{background:rgba(255,255,255,.015)}
 </head>
 <body>
 <div class="ld" id="ld"><div class="sp"></div><p id="ldt">Loading live data...</p></div>
-
 <div class="hdr">
 <div class="hdr-l"><div class="logo">⚡</div><div><div class="hdr-t">Operations Command Center</div><div class="hdr-st">Live TV Dashboard</div></div></div>
 <div style="display:flex;align-items:center;gap:14px"><div class="dots" id="dots"></div><div class="live"><span class="ldot"></span>LIVE</div></div>
 <div><div class="clk" id="clk">--:--</div><div class="clk-d" id="clkd">--</div></div>
 </div>
-
 <div class="slider"><div class="track" id="trk">
 <div class="slide"><div class="ogrid" id="ogrid"></div></div>
 <div class="slide" id="sl1"></div>
@@ -88,38 +85,23 @@ tbody tr:hover{background:rgba(255,255,255,.015)}
 <div class="slide" id="sl6"></div>
 </div></div>
 <div class="tb"><div class="tf" id="tf"></div></div>
-
 <script>
 var SID="1iN9bWTjjNDFuwchaw1PikmbquIPhTcmCByGtccf4IWY";
 var TOTAL=7,SLIDE_SEC=120,cur=0,tmr=0;
-
 var CFG=[
-  {name:"",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",
-   heads:["Date","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,defF:0,color:"59,130,246"},
-  {name:"Site Work Entry",sheet:"Site Work Entry",gid:1491806736,icon:"🔧",cls:"c1",
-   heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:3,color:"16,185,129",statusCol:9,statusVal:"in progress",miniCols:[2,1]},
-  {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",gid:1835648226,icon:"📋",cls:"c2",
-   heads:["Date","Requested By","Client","Visit Status","Tech Drawing","Client Approval"],cols:[0,2,3,7,14,16],dateCol:0,defF:0,color:"245,158,11"},
-  {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",
-   heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
-  {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",
-   heads:["Date","Client","Sale Order","Item No","Qty","Person"],cols:[1,2,3,4,5,6],dateCol:1,defF:0,color:"139,92,246"},
-  {name:"Weekly Delivery SCHEDULE'S",sheet:"Weekly Delivery SCHEDULE'S schedule",gid:1009335742,icon:"🚚",cls:"c5",
-   heads:["Client Name","Sale Order","Expected Date","Remarks"],cols:[1,2,3,4],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3]}
+  {name:"TODAY DELIVERIES",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",heads:["Date","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,defF:0,color:"59,130,246"},
+  {name:"Site Work Entry",sheet:"Site Work Entry",gid:1491806736,icon:"🔧",cls:"c1",heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:3,color:"16,185,129",statusCol:9,statusVal:"in progress",miniCols:[2,1]},
+  {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",gid:1835648226,icon:"📋",cls:"c2",heads:["Date","Requested By","Client","Visit Status","Tech Drawing","Client Approval"],cols:[0,2,3,7,14,16],dateCol:0,defF:0,color:"245,158,11"},
+  {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
+  {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",heads:["Date","Client","Sale Order","Item No","Qty","Person"],cols:[1,2,3,4,5,6],dateCol:1,defF:0,color:"139,92,246"},
+  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks"],cols:[1,2,3,4],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3]}
 ];
-
 var filters=CFG.map(function(c){return c.defF});
 var raw=CFG.map(function(){return[]});
-
-// Clock
 function tick(){var n=new Date();document.getElementById('clk').textContent=n.toLocaleTimeString('en-US',{hour12:true,hour:'2-digit',minute:'2-digit',second:'2-digit'});document.getElementById('clkd').textContent=n.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'short',year:'numeric'})}
 setInterval(tick,1000);tick();
-
-// Dots
 var dh='';for(var i=0;i<TOTAL;i++)dh+='<div class="dot'+(i===0?' on':'')+'" onclick="go('+i+')"></div>';
 document.getElementById('dots').innerHTML=dh;
-
-// Build overview
 document.getElementById('ogrid').innerHTML=CFG.map(function(c,i){
   if(i===4)return'';
   return'<div class="oc '+c.cls+'" onclick="go('+(i+1)+')">'
@@ -127,11 +109,10 @@ document.getElementById('ogrid').innerHTML=CFG.map(function(c,i){
     +'<div class="oc-lb" style="font-size:14px;margin-top:8px">'+c.name+'</div><div class="oc-sb" id="sb'+i+'"></div>'
     +'<div class="oc-ml" id="ml'+i+'"></div></div>';
 }).join('');
-
-// Build detail slides
 CFG.forEach(function(c,i){
   var fl;
-  if(c.statusCol!==undefined||i===5){fl=[['All',3],['Weekly',1],['Monthly',2]]}
+  if(c.statusCol!==undefined){fl=[['In Progress',3],['Weekly (All)',1],['Monthly (All)',2]]}
+  else if(i===5){fl=[['All',3],['Weekly',1],['Monthly',2]]}
   else{fl=[['Daily',0],['Weekly',1],['Monthly',2]]}
   document.getElementById('sl'+(i+1)).innerHTML=
     '<div class="dh"><div class="di" style="background:rgba('+c.color+',.1)">'+c.icon+'</div>'
@@ -141,33 +122,25 @@ CFG.forEach(function(c,i){
     +'<div class="tw"><table><thead><tr><th>#</th>'+c.heads.map(function(h){return'<th>'+h+'</th>'}).join('')+'</tr></thead>'
     +'<tbody id="tb'+i+'"></tbody></table></div>';
 });
-
-// Slider
 function go(i){cur=i;tmr=0;document.getElementById('trk').style.transform='translateX(-'+i*100+'vw)';document.querySelectorAll('.dot').forEach(function(d,x){d.classList.toggle('on',x===i)});document.getElementById('tf').style.width='0%'}
 setInterval(function(){tmr++;document.getElementById('tf').style.width=(tmr/SLIDE_SEC*100)+'%';if(tmr>=SLIDE_SEC)go((cur+1)%TOTAL)},1000);
 document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' ')go((cur+1)%TOTAL);else if(e.key==='ArrowLeft')go((cur-1+TOTAL)%TOTAL)});
-
 function sf(s,v,btn){filters[s]=v;btn.parentElement.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');renderSection(s)}
-
 function sheetURL(name,gid){return"https://docs.google.com/spreadsheets/d/"+SID+"/gviz/tq?tqx=out:csv&gid="+gid+"&t="+Date.now()}
-
 function parseCSV(t){var rows=[],row=[],cell='',q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row);row=[];cell=''}else if(c!=='\r')cell+=c}}if(cell||row.length){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row)}return rows}
-
 function inRange(ds,mode){
   if(mode===3)return true;
   if(!ds)return mode>=1;
   var now=new Date();now.setHours(0,0,0,0);
   var d=new Date(ds);
-  if(isNaN(d)){var p=ds.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);if(p){d=new Date(p[3],p[2]-1,p[1]);if(isNaN(d))d=new Date(p[3],p[1]-1,p[2])}else return mode>=1}
-  if(isNaN(d))return mode>=1;
+  if(isNaN(d)){var p=ds.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);if(p){d=new Date(p[3],p[2]-1,p[1]);if(isNaN(d))d=new Date(p[3],p[1]-1,p[2])}else return true}
+  if(isNaN(d))return true;
   d.setHours(0,0,0,0);var diff=(now-d)/864e5;
   if(mode===0)return diff>=0&&diff<1;
-  if(mode===1)return diff>-7&&diff<7;
-  return diff>-30&&diff<30;
+  if(mode===1)return diff>=-8&&diff<=8;
+  return diff>=-31&&diff<=31;
 }
-
 function esc(v){if(v==null)return'';var d=document.createElement('div');d.textContent=String(v).trim();return d.innerHTML}
-
 function chip(v){
   var s=String(v||'').toLowerCase();
   if(s.indexOf('completed')>-1||s==='true'||s==='done')return'<span class="ch cp">'+esc(v)+'</span>';
@@ -177,17 +150,20 @@ function chip(v){
   if(s.indexOf('not')>-1)return'<span class="ch pd">'+esc(v)+'</span>';
   return esc(v);
 }
-
 function getRows(idx){
   var c=CFG[idx],data=raw[idx];if(!data||data.length<2)return[];
   return data.slice(1).filter(function(r){
     if(!r||r.length<2||r[0]==='')return false;
     var f=filters[idx];
-    if(c.statusCol!==undefined&&f===3){var st=String(r[c.statusCol]||'').trim().toLowerCase();if(st.indexOf(c.statusVal)===-1)return false}
+    // Status filter ONLY on default "In Progress" view (mode 3)
+    // Weekly(1) and Monthly(2) show ALL statuses
+    if(c.statusCol!==undefined&&f===3){
+      var st=String(r[c.statusCol]||'').trim().toLowerCase();
+      if(st.indexOf(c.statusVal)===-1)return false;
+    }
     return inRange(r[c.dateCol],f);
   });
 }
-
 function renderSection(idx){
   var c=CFG[idx],rows=getRows(idx);
   document.getElementById('dc'+idx).textContent=rows.length;
@@ -205,13 +181,14 @@ function renderSection(idx){
     }).join('')+'</tr>';
   }).join('');
 }
-
 function renderAll(){
   var labels=['Today','Active','Today','Active','Today','All'];
   CFG.forEach(function(c,i){
     var rows=getRows(i);
     if(i===4){renderSection(i);return;}
-    document.getElementById('sb'+i).textContent=labels[i]+' — '+rows.length+' items';
+    var sb=document.getElementById('sb'+i);
+    if(!sb){renderSection(i);return;}
+    sb.textContent=labels[i]+' — '+rows.length+' items';
     var el=document.getElementById('ml'+i);
     if(!el){renderSection(i);return;}
     var items=rows.slice(0,3);
@@ -223,7 +200,6 @@ function renderAll(){
     renderSection(i);
   });
 }
-
 async function loadData(){
   try{
     document.getElementById('ldt').textContent='Fetching...';
@@ -233,7 +209,6 @@ async function loadData(){
     document.getElementById('ld').classList.add('h');
   }catch(e){document.getElementById('ldt').textContent='Retrying...';setTimeout(loadData,10000)}
 }
-
 loadData();
 setInterval(loadData,60000);
 </script>
