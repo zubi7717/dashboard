@@ -55,7 +55,7 @@ thead th{background:var(--s2);padding:8px 12px;text-align:left;font-size:10px;fo
 tbody td{padding:7px 12px;font-size:12px;font-weight:500;border-bottom:1px solid rgba(28,45,74,.3);white-space:nowrap}
 tbody tr:hover{background:rgba(255,255,255,.015)}
 .ch{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:5px;font-size:10px;font-weight:700}
-.ch.ip{background:rgba(245,158,11,.1);color:#f59e0b}.ch.pd{background:rgba(239,68,68,.1);color:#ef4444}.ch.cp{background:rgba(16,185,129,.1);color:#10b981}.ch.ap{background:rgba(59,130,246,.1);color:#3b82f6}
+.ch.ip{background:rgba(245,158,11,.1);color:#f59e0b}.ch.pd{background:rgba(239,68,68,.1);color:#ef4444}.ch.cp{background:rgba(16,185,129,.1);color:#10b981}.ch.ap{background:rgba(59,130,246,.1);color:#3b82f6}.ch.oh{background:rgba(139,92,246,.12);color:#a78bfa}
 .db{font-weight:800;font-size:12px;padding:2px 8px;border-radius:5px}
 .db.ok{background:rgba(16,185,129,.1);color:#10b981}.db.wr{background:rgba(245,158,11,.1);color:#f59e0b}.db.dn{background:rgba(239,68,68,.1);color:#ef4444}
 .em{padding:30px;text-align:center;color:var(--mt);font-size:12px}
@@ -91,7 +91,17 @@ var TOTAL=7,SLIDE_SEC=120,cur=0,tmr=0;
 var CFG=[
   {name:"TODAY DELIVERIES",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",heads:["Date","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,defF:0,color:"59,130,246"},
   {name:"Site Work Entry",sheet:"Site Work Entry",gid:1491806736,icon:"🔧",cls:"c1",heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:3,color:"16,185,129",statusCol:9,statusVal:"in progress",miniCols:[2,1]},
-  {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",gid:1835648226,icon:"📋",cls:"c2",heads:["Date","Requested By","Client","Visit Status","Tech Drawing","Client Approval"],cols:[0,2,3,7,14,16],dateCol:0,defF:0,color:"245,158,11"},
+  // SITE VISIT: columns are auto-detected from the sheet headers (find).
+  // The numbers in cols are only a fallback if a header is not found.
+  {name:"Site Visit & Technical",sheet:"Site Visit and Technical Workflow Dashboard",gid:1835648226,icon:"📋",cls:"c2",
+   heads:["Date","Requested By","Client","Visit Status","Tech Drawing","Client Approval"],
+   cols:[0,1,3,7,15,17],dateCol:0,defF:0,color:"245,158,11",
+   find:{
+     1:["your name","requested by"],                       // Requested By -> person NAME (not email)
+     4:["drawing & cad status","cad status","drawing status"], // In progress / On hold / Completed
+     5:["client approval status","approval status"]         // Approved and signed / Rejected with questions
+   },
+   miniCols:[1,7]},
   {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
   {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",heads:["Date","Client","Sale Order","Item No","Qty","Person"],cols:[1,2,3,4,5,6],dateCol:1,defF:0,color:"139,92,246"},
   {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks"],cols:[1,2,3,4],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3]}
@@ -128,6 +138,27 @@ document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==
 function sf(s,v,btn){filters[s]=v;btn.parentElement.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');renderSection(s)}
 function sheetURL(name,gid){return"https://docs.google.com/spreadsheets/d/"+SID+"/gviz/tq?tqx=out:csv&gid="+gid+"&t="+Date.now()}
 function parseCSV(t){var rows=[],row=[],cell='',q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row);row=[];cell=''}else if(c!=='\r')cell+=c}}if(cell||row.length){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row)}return rows}
+
+// Find columns by header text, so the dashboard keeps working even if columns move.
+function autoCols(idx){
+  var c=CFG[idx],data=raw[idx];
+  if(!c.find||!data||!data.length)return;
+  var hdrRows=data.slice(0,3);
+  Object.keys(c.find).forEach(function(k){
+    var phrases=c.find[k],found=-1;
+    for(var p=0;p<phrases.length&&found<0;p++){
+      for(var r=0;r<hdrRows.length&&found<0;r++){
+        for(var j=0;j<hdrRows[r].length;j++){
+          var h=String(hdrRows[r][j]||'').toLowerCase().replace(/\s+/g,' ').trim();
+          if(h.indexOf(phrases[p])>-1&&!/date|email|e-mail|timestamp/.test(h)){found=j;break}
+        }
+      }
+    }
+    if(found>-1)c.cols[k]=found;
+  });
+  if(c.miniCols)c.miniCols=[c.cols[1],c.cols[3]];
+}
+
 function inRange(ds,mode){
   if(mode===3)return true;
   if(!ds)return mode>=1;
@@ -142,8 +173,11 @@ function inRange(ds,mode){
 }
 function esc(v){if(v==null)return'';var d=document.createElement('div');d.textContent=String(v).trim();return d.innerHTML}
 function chip(v){
-  var s=String(v||'').toLowerCase();
-  if(s.indexOf('completed')>-1||s==='true'||s==='done')return'<span class="ch cp">'+esc(v)+'</span>';
+  var s=String(v||'').toLowerCase().trim();
+  if(!s)return'';
+  if(s.indexOf('reject')>-1||s.indexOf('question')>-1)return'<span class="ch pd">'+esc(v)+'</span>';
+  if(s.indexOf('hold')>-1)return'<span class="ch oh">'+esc(v)+'</span>';
+  if(s.indexOf('completed')>-1||s.indexOf('signed')>-1||s==='true'||s==='done')return'<span class="ch cp">'+esc(v)+'</span>';
   if(s.indexOf('progress')>-1||s==='working'||s==='work')return'<span class="ch ip">'+esc(v)+'</span>';
   if(s==='pending')return'<span class="ch pd">'+esc(v)+'</span>';
   if(s==='approved'||s==='worked')return'<span class="ch ap">'+esc(v)+'</span>';
@@ -155,8 +189,6 @@ function getRows(idx){
   return data.slice(1).filter(function(r){
     if(!r||r.length<2||r[0]==='')return false;
     var f=filters[idx];
-    // Status filter ONLY on default "In Progress" view (mode 3)
-    // Weekly(1) and Monthly(2) show ALL statuses
     if(c.statusCol!==undefined&&f===3){
       var st=String(r[c.statusCol]||'').trim().toLowerCase();
       if(st.indexOf(c.statusVal)===-1)return false;
@@ -174,7 +206,7 @@ function renderSection(idx){
       var v=r[col]||'';var h=c.heads[ci];
       if(h.indexOf('Status')>-1||h.indexOf('Approval')>-1||h.indexOf('Drawing')>-1)return'<td>'+chip(v)+'</td>';
       if(h==='Days')return'<td><span class="db '+(parseInt(v)>7?'dn':parseInt(v)>3?'wr':'ok')+'">'+parseInt(v||0)+'d</span></td>';
-      if(h==='Client'||h==='Client Name')return'<td style="font-weight:700">'+esc(v)+'</td>';
+      if(h==='Client'||h==='Client Name'||h==='Requested By')return'<td style="font-weight:700">'+esc(v)+'</td>';
       if(h==='Sale Order')return'<td><code style="background:var(--s2);padding:2px 6px;border-radius:3px;font-size:11px">'+esc(v)+'</code></td>';
       if(h==='Machine'||h==='DN Number')return'<td style="font-weight:700;color:rgb('+c.color+')">'+esc(v)+'</td>';
       return'<td>'+esc(v)+'</td>';
@@ -204,7 +236,7 @@ async function loadData(){
   try{
     document.getElementById('ldt').textContent='Fetching...';
     var results=await Promise.all(CFG.map(function(c){return fetch(sheetURL(c.sheet,c.gid)).then(function(r){return r.text()})}));
-    results.forEach(function(t,i){raw[i]=parseCSV(t)});
+    results.forEach(function(t,i){raw[i]=parseCSV(t);autoCols(i)});
     renderAll();
     document.getElementById('ld').classList.add('h');
   }catch(e){document.getElementById('ldt').textContent='Retrying...';setTimeout(loadData,10000)}
