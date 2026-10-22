@@ -89,7 +89,7 @@ tbody tr:hover{background:rgba(255,255,255,.015)}
 var SID="1iN9bWTjjNDFuwchaw1PikmbquIPhTcmCByGtccf4IWY";
 var TOTAL=7,SLIDE_SEC=120,cur=0,tmr=0;
 var CFG=[
-  {name:"TODAY DELIVERIES",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",heads:["Date","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,defF:0,color:"59,130,246"},
+  {name:"TODAY DELIVERIES",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",heads:["Date & Time","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,timeCol:0,defF:0,color:"59,130,246"},
   {name:"Site Work Entry",sheet:"Site Work Entry",gid:1491806736,icon:"🔧",cls:"c1",heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:3,color:"16,185,129",statusCol:9,statusVal:"in progress",miniCols:[2,1]},
   // SITE VISIT: columns are auto-detected from the sheet headers (find).
   // The numbers in cols are only a fallback if a header is not found.
@@ -104,7 +104,8 @@ var CFG=[
    miniCols:[1,7]},
   {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
   {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",heads:["Date","Client","Sale Order","Item No","Qty","Person"],cols:[1,2,3,4,5,6],dateCol:1,defF:0,color:"139,92,246"},
-  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks"],cols:[1,2,3,4],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3]}
+  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks","Status"],cols:[1,2,3,4,5],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3],
+   find:{4:["status"]}}
 ];
 var filters=CFG.map(function(c){return c.defF});
 var raw=CFG.map(function(){return[]});
@@ -156,7 +157,7 @@ function autoCols(idx){
     }
     if(found>-1)c.cols[k]=found;
   });
-  if(c.miniCols)c.miniCols=[c.cols[1],c.cols[3]];
+  if(c.miniCols&&c.find[1])c.miniCols=[c.cols[1],c.cols[3]];
 }
 
 function inRange(ds,mode){
@@ -171,13 +172,19 @@ function inRange(ds,mode){
   if(mode===1)return diff>=-8&&diff<=8;
   return diff>=-31&&diff<=31;
 }
+function fmtTime(ts){
+  var m=String(ts||'').match(/(\d{1,2}):(\d{2})/);if(!m)return'';
+  var h=parseInt(m[1],10),ap=h>=12?'PM':'AM';h=h%12||12;
+  return h+':'+m[2]+' '+ap;
+}
 function esc(v){if(v==null)return'';var d=document.createElement('div');d.textContent=String(v).trim();return d.innerHTML}
 function chip(v){
   var s=String(v||'').toLowerCase().trim();
   if(!s)return'';
   if(s.indexOf('reject')>-1||s.indexOf('question')>-1)return'<span class="ch pd">'+esc(v)+'</span>';
-  if(s.indexOf('hold')>-1)return'<span class="ch oh">'+esc(v)+'</span>';
-  if(s.indexOf('completed')>-1||s.indexOf('signed')>-1||s==='true'||s==='done')return'<span class="ch cp">'+esc(v)+'</span>';
+  if(s.indexOf('not')>-1||s.indexOf('cancel')>-1)return'<span class="ch pd">'+esc(v)+'</span>';
+  if(s.indexOf('hold')>-1||s.indexOf('postpone')>-1||s.indexOf('delay')>-1)return'<span class="ch oh">'+esc(v)+'</span>';
+  if(s.indexOf('completed')>-1||s.indexOf('signed')>-1||s.indexOf('deliver')>-1||s.indexOf('ready')>-1||s==='true'||s==='done')return'<span class="ch cp">'+esc(v)+'</span>';
   if(s.indexOf('progress')>-1||s==='working'||s==='work')return'<span class="ch ip">'+esc(v)+'</span>';
   if(s==='pending')return'<span class="ch pd">'+esc(v)+'</span>';
   if(s==='approved'||s==='worked')return'<span class="ch ap">'+esc(v)+'</span>';
@@ -204,6 +211,7 @@ function renderSection(idx){
   tb.innerHTML=rows.map(function(r,i){
     return'<tr><td style="color:var(--mt);font-weight:700;font-size:11px">'+(i+1)+'</td>'+c.cols.map(function(col,ci){
       var v=r[col]||'';var h=c.heads[ci];
+      if(ci===0&&c.timeCol!==undefined){var tm=fmtTime(r[c.timeCol]);return'<td>'+esc(v)+(tm?'<span style="color:var(--mt);margin-left:10px;font-weight:600">'+tm+'</span>':'')+'</td>'}
       if(h.indexOf('Status')>-1||h.indexOf('Approval')>-1||h.indexOf('Drawing')>-1)return'<td>'+chip(v)+'</td>';
       if(h==='Days')return'<td><span class="db '+(parseInt(v)>7?'dn':parseInt(v)>3?'wr':'ok')+'">'+parseInt(v||0)+'d</span></td>';
       if(h==='Client'||h==='Client Name'||h==='Requested By')return'<td style="font-weight:700">'+esc(v)+'</td>';
