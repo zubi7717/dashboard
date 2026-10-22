@@ -104,7 +104,7 @@ var CFG=[
    miniCols:[1,7]},
   {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
   {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",heads:["Date","Client","Sale Order","Item No","Qty","Person"],cols:[1,2,3,4,5,6],dateCol:1,defF:0,color:"139,92,246"},
-  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks","Status"],cols:[1,2,3,4,5],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3],
+  {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks","Status","Revised Date"],cols:[1,2,3,4,5,6],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3],
    find:{4:["status"]}}
 ];
 var filters=CFG.map(function(c){return c.defF});
@@ -216,6 +216,7 @@ function renderSection(idx){
       if(h==='Days')return'<td><span class="db '+(parseInt(v)>7?'dn':parseInt(v)>3?'wr':'ok')+'">'+parseInt(v||0)+'d</span></td>';
       if(h==='Client'||h==='Client Name'||h==='Requested By')return'<td style="font-weight:700">'+esc(v)+'</td>';
       if(h==='Sale Order')return'<td><code style="background:var(--s2);padding:2px 6px;border-radius:3px;font-size:11px">'+esc(v)+'</code></td>';
+      if(h==='Revised Date')return'<td style="font-weight:700;color:rgb('+c.color+')">'+esc(v)+'</td>';
       if(h==='Machine'||h==='DN Number')return'<td style="font-weight:700;color:rgb('+c.color+')">'+esc(v)+'</td>';
       return'<td>'+esc(v)+'</td>';
     }).join('')+'</tr>';
