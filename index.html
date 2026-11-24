@@ -6,7 +6,7 @@
 <title>Operations Command Center</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#050a18;--s1:#0c1425;--s2:#131d35;--bd:#1c2d4a;--tx:#e8ecf4;--mt:#6b7fa3;--c0:#3b82f6;--c1:#10b981;--c2:#f59e0b;--c3:#ef4444;--c4:#8b5cf6;--c5:#06b6d4}
+:root{--bg:#050a18;--s1:#0c1425;--s2:#131d35;--bd:#1c2d4a;--tx:#e8ecf4;--mt:#6b7fa3;--c0:#3b82f6;--c1:#10b981;--c2:#f59e0b;--c3:#ef4444;--c4:#8b5cf6;--c5:#06b6d4;--c6:#ec4899}
 body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--tx);overflow:hidden;height:100vh;width:100vw}
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 24px;background:linear-gradient(135deg,#080e20,#111b33);border-bottom:1px solid var(--bd);height:56px}
 .hdr-l{display:flex;align-items:center;gap:10px}
@@ -42,6 +42,11 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .c3::before{background:var(--c3)}.c3 .oc-ic{background:rgba(239,68,68,.1)}
 .c4::before{background:var(--c4)}.c4 .oc-ic{background:rgba(139,92,246,.1)}
 .c5::before{background:var(--c5)}.c5 .oc-ic{background:rgba(6,182,212,.1)}
+.c6::before{background:var(--c6)}.c6 .oc-ic{background:rgba(236,72,153,.1)}
+.vk{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px;flex-shrink:0}
+.vkc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;border-left:3px solid var(--bd)}
+.vkv{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+.vkl{font-size:11px;color:var(--mt);font-weight:600;margin-top:2px}
 .dh{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-shrink:0}
 .di{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
 .dt{font-size:22px;font-weight:900;letter-spacing:-.5px}
@@ -83,11 +88,12 @@ tbody tr:hover{background:rgba(255,255,255,.015)}
 <div class="slide" id="sl4"></div>
 <div class="slide" id="sl5"></div>
 <div class="slide" id="sl6"></div>
+<div class="slide" id="sl7"></div>
 </div></div>
 <div class="tb"><div class="tf" id="tf"></div></div>
 <script>
 var SID="1iN9bWTjjNDFuwchaw1PikmbquIPhTcmCByGtccf4IWY";
-var TOTAL=7,SLIDE_SEC=120,cur=0,tmr=0;
+var TOTAL=8,SLIDE_SEC=120,cur=0,tmr=0;
 var CFG=[
   {name:"TODAY DELIVERIES",sheet:"Delivery & Operations Hub Dashboard",gid:0,icon:"📦",cls:"c0",heads:["Date & Time","Client Name","Sale Order","DN Number"],cols:[1,2,3,5],dateCol:1,timeCol:0,defF:0,color:"59,130,246"},
   {name:"Site Work Entry",sheet:"Site Work Entry",gid:1491806736,icon:"🔧",cls:"c1",heads:["Date","Client","Sale Order","Staff","Qty","Unit","Status"],cols:[1,2,3,4,6,7,9],dateCol:1,defF:3,color:"16,185,129",statusCol:9,statusVal:"in progress",miniCols:[2,1]},
@@ -105,7 +111,9 @@ var CFG=[
   {name:"Machine Job Register",sheet:"Operations Job Register Dashboard",gid:1402558379,icon:"⚙️",cls:"c3",heads:["Start Date","Client","Sale Order","Machine","End Date","Days","Status"],cols:[0,1,3,2,5,7,6],dateCol:0,defF:3,color:"239,68,68",statusCol:6,statusVal:"in progress",miniCols:[1,2]},
   {name:"Master Inventory",sheet:"master inventory catalog",gid:983402358,icon:"📊",cls:"c4",heads:["Date","Client","Sale Order","Item No","Qty","Person"],cols:[1,2,3,4,5,6],dateCol:1,defF:0,color:"139,92,246"},
   {name:"Weekly Delivery",sheet:"Weekly Delivery schedule",gid:1009335742,icon:"🚚",cls:"c5",heads:["Client Name","Sale Order","Expected Date","Remarks","Status","Revised Date"],cols:[1,2,3,4,5,6],dateCol:3,defF:3,color:"6,182,212",miniCols:[1,3],
-   find:{4:["status"]}}
+   find:{4:["status"]}},
+  // VILLA DETAILS: summary in rows 1-2, villa list from row 4. Read by tab name.
+  {name:"Villa Details",sheet:"Villa Details",byName:true,villa:true,icon:"🏠",cls:"c6",heads:["Phase","Zone","Villa Type","Villa Number","Status"],cols:[0,1,2,3,4],dateCol:0,defF:3,color:"236,72,153",miniCols:[3,4]}
 ];
 var filters=CFG.map(function(c){return c.defF});
 var raw=CFG.map(function(){return[]});
@@ -115,6 +123,10 @@ var dh='';for(var i=0;i<TOTAL;i++)dh+='<div class="dot'+(i===0?' on':'')+'" oncl
 document.getElementById('dots').innerHTML=dh;
 document.getElementById('ogrid').innerHTML=CFG.map(function(c,i){
   if(i===4)return'';
+  if(i===6)return'<div class="oc '+c.cls+'" onclick="go(7)">'
+    +'<div class="oc-top"><div class="oc-ic">'+c.icon+'</div></div>'
+    +'<div class="oc-lb" style="font-size:14px;margin-top:8px">'+c.name+'</div><div class="oc-sb" id="sb'+i+'"></div>'
+    +'<div class="oc-ml" id="ml'+i+'"></div></div>';
   return'<div class="oc '+c.cls+'" onclick="go('+(i+1)+')">'
     +'<div class="oc-top"><div class="oc-ic">'+c.icon+'</div></div>'
     +'<div class="oc-lb" style="font-size:14px;margin-top:8px">'+c.name+'</div><div class="oc-sb" id="sb'+i+'"></div>'
@@ -124,12 +136,14 @@ CFG.forEach(function(c,i){
   var fl;
   if(c.statusCol!==undefined){fl=[['In Progress',3],['Weekly (All)',1],['Monthly (All)',2]]}
   else if(i===5){fl=[['All',3],['Weekly',1],['Monthly',2]]}
+  else if(c.villa){fl=[['All',3],['Cutting',11],['Pending',13],['Ready',10],['Delivered',12]]}
   else{fl=[['Daily',0],['Weekly',1],['Monthly',2]]}
   document.getElementById('sl'+(i+1)).innerHTML=
     '<div class="dh"><div class="di" style="background:rgba('+c.color+',.1)">'+c.icon+'</div>'
     +'<div class="dt">'+c.name+'</div>'
     +'<div class="dc" id="dc'+i+'" style="background:rgba('+c.color+',.1);color:rgb('+c.color+')">0</div>'
     +'<div class="flt">'+fl.map(function(f){return'<button class="fb'+(f[1]===c.defF?' on':'')+'" onclick="sf('+i+','+f[1]+',this)">'+f[0]+'</button>'}).join('')+'</div></div>'
+    +(c.villa?'<div class="vk" id="vk'+i+'"></div>':'')
     +'<div class="tw"><table><thead><tr><th>#</th>'+c.heads.map(function(h){return'<th>'+h+'</th>'}).join('')+'</tr></thead>'
     +'<tbody id="tb'+i+'"></tbody></table></div>';
 });
@@ -137,7 +151,7 @@ function go(i){cur=i;tmr=0;document.getElementById('trk').style.transform='trans
 setInterval(function(){tmr++;document.getElementById('tf').style.width=(tmr/SLIDE_SEC*100)+'%';if(tmr>=SLIDE_SEC)go((cur+1)%TOTAL)},1000);
 document.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key===' ')go((cur+1)%TOTAL);else if(e.key==='ArrowLeft')go((cur-1+TOTAL)%TOTAL)});
 function sf(s,v,btn){filters[s]=v;btn.parentElement.querySelectorAll('.fb').forEach(function(b){b.classList.remove('on')});btn.classList.add('on');renderSection(s)}
-function sheetURL(name,gid){return"https://docs.google.com/spreadsheets/d/"+SID+"/gviz/tq?tqx=out:csv&gid="+gid+"&t="+Date.now()}
+function sheetURL(name,gid,byName){return"https://docs.google.com/spreadsheets/d/"+SID+"/gviz/tq?tqx=out:csv&"+(byName?"sheet="+encodeURIComponent(name):"gid="+gid)+"&t="+Date.now()}
 function parseCSV(t){var rows=[],row=[],cell='',q=false;for(var i=0;i<t.length;i++){var c=t[i];if(q){if(c==='"'&&t[i+1]==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}else{if(c==='"')q=true;else if(c===','){row.push(cell);cell=''}else if(c==='\n'){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row);row=[];cell=''}else if(c!=='\r')cell+=c}}if(cell||row.length){row.push(cell);if(row.length>1||row[0]!=='')rows.push(row)}return rows}
 
 // Find columns by header text, so the dashboard keeps working even if columns move.
@@ -185,14 +199,33 @@ function chip(v){
   if(s.indexOf('not')>-1||s.indexOf('cancel')>-1)return'<span class="ch pd">'+esc(v)+'</span>';
   if(s.indexOf('hold')>-1||s.indexOf('postpone')>-1||s.indexOf('delay')>-1)return'<span class="ch oh">'+esc(v)+'</span>';
   if(s.indexOf('completed')>-1||s.indexOf('signed')>-1||s.indexOf('deliver')>-1||s.indexOf('ready')>-1||s==='true'||s==='done')return'<span class="ch cp">'+esc(v)+'</span>';
-  if(s.indexOf('progress')>-1||s==='working'||s==='work')return'<span class="ch ip">'+esc(v)+'</span>';
+  if(s.indexOf('progress')>-1||s.indexOf('cut')>-1||s==='working'||s==='work')return'<span class="ch ip">'+esc(v)+'</span>';
   if(s==='pending')return'<span class="ch pd">'+esc(v)+'</span>';
   if(s==='approved'||s==='worked')return'<span class="ch ap">'+esc(v)+'</span>';
   if(s.indexOf('not')>-1)return'<span class="ch pd">'+esc(v)+'</span>';
   return esc(v);
 }
+function villaKind(st){
+  var s=String(st||'').toLowerCase();
+  if(s.indexOf('ready')>-1)return 10;
+  if(s.indexOf('deliver')>-1)return 12;
+  if(s.indexOf('cut')>-1)return 11;
+  if(s.indexOf('pending')>-1)return 13;
+  return 0;
+}
+function villaList(data){return(data||[]).slice(3).filter(function(r){return r&&String(r[3]||'').trim()!==''})}
+function villaSummary(data){
+  var list=villaList(data),n={10:0,11:0,12:0,13:0};
+  list.forEach(function(r){var k=villaKind(r[4]);if(k)n[k]++});
+  var top=(data&&data[1])||[];
+  function pick(i,calc){var v=String(top[i]||'').trim();return v!==''?v:String(calc)}
+  var total=pick(0,list.length);
+  var pend=n[13]||Math.max(0,(parseInt(total)||list.length)-n[10]-n[11]-n[12]);
+  return[[total,'Total Villa'],[pick(1,n[11]),'Cutting Villas'],[pick(2,pend),'Pending Villas'],[pick(3,n[10]),'Ready to Deliver'],[pick(4,n[12]),'Total Delivered Villa']];
+}
 function getRows(idx){
   var c=CFG[idx],data=raw[idx];if(!data||data.length<2)return[];
+  if(c.villa){var f=filters[idx];return villaList(data).filter(function(r){return f===3||villaKind(r[4])===f})}
   return data.slice(1).filter(function(r){
     if(!r||r.length<2||r[0]==='')return false;
     var f=filters[idx];
@@ -206,6 +239,11 @@ function getRows(idx){
 function renderSection(idx){
   var c=CFG[idx],rows=getRows(idx);
   document.getElementById('dc'+idx).textContent=rows.length;
+  if(c.villa){
+    var kc=['var(--c6)','var(--c2)','var(--c3)','var(--c1)','var(--c0)'];
+    document.getElementById('vk'+idx).innerHTML=villaSummary(raw[idx]).map(function(k,x){
+      return'<div class="vkc" style="border-left-color:'+kc[x]+'"><div class="vkv">'+esc(k[0])+'</div><div class="vkl">'+k[1]+'</div></div>'}).join('');
+  }
   var tb=document.getElementById('tb'+idx);
   if(!rows.length){tb.innerHTML='<tr><td colspan="'+(c.heads.length+1)+'"><div class="em">'+c.icon+' No data</div></td></tr>';return}
   tb.innerHTML=rows.map(function(r,i){
@@ -216,6 +254,7 @@ function renderSection(idx){
       if(h==='Days')return'<td><span class="db '+(parseInt(v)>7?'dn':parseInt(v)>3?'wr':'ok')+'">'+parseInt(v||0)+'d</span></td>';
       if(h==='Client'||h==='Client Name'||h==='Requested By')return'<td style="font-weight:700">'+esc(v)+'</td>';
       if(h==='Sale Order')return'<td><code style="background:var(--s2);padding:2px 6px;border-radius:3px;font-size:11px">'+esc(v)+'</code></td>';
+      if(h==='Villa Number')return'<td style="font-weight:700;color:rgb('+c.color+')">'+esc(v)+'</td>';
       if(h==='Revised Date')return'<td style="font-weight:700;color:rgb('+c.color+')">'+esc(v)+'</td>';
       if(h==='Machine'||h==='DN Number')return'<td style="font-weight:700;color:rgb('+c.color+')">'+esc(v)+'</td>';
       return'<td>'+esc(v)+'</td>';
@@ -223,13 +262,14 @@ function renderSection(idx){
   }).join('');
 }
 function renderAll(){
-  var labels=['Today','Active','Today','Active','Today','All'];
+  var labels=['Today','Active','Today','Active','Today','All','All'];
   CFG.forEach(function(c,i){
     var rows=getRows(i);
     if(i===4){renderSection(i);return;}
     var sb=document.getElementById('sb'+i);
     if(!sb){renderSection(i);return;}
-    sb.textContent=labels[i]+' — '+rows.length+' items';
+    if(c.villa){var vs=villaSummary(raw[i]);sb.textContent=vs[0][0]+' villas, '+vs[3][0]+' ready to deliver'}
+    else sb.textContent=labels[i]+' — '+rows.length+' items';
     var el=document.getElementById('ml'+i);
     if(!el){renderSection(i);return;}
     var items=rows.slice(0,3);
@@ -244,7 +284,7 @@ function renderAll(){
 async function loadData(){
   try{
     document.getElementById('ldt').textContent='Fetching...';
-    var results=await Promise.all(CFG.map(function(c){return fetch(sheetURL(c.sheet,c.gid)).then(function(r){return r.text()})}));
+    var results=await Promise.all(CFG.map(function(c){return fetch(sheetURL(c.sheet,c.gid,c.byName)).then(function(r){return r.text()})}));
     results.forEach(function(t,i){raw[i]=parseCSV(t);autoCols(i)});
     renderAll();
     document.getElementById('ld').classList.add('h');
