@@ -43,7 +43,7 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:v
 .c4::before{background:var(--c4)}.c4 .oc-ic{background:rgba(139,92,246,.1)}
 .c5::before{background:var(--c5)}.c5 .oc-ic{background:rgba(6,182,212,.1)}
 .c6::before{background:var(--c6)}.c6 .oc-ic{background:rgba(236,72,153,.1)}
-.vk{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:10px;flex-shrink:0}
+.vk{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:10px;flex-shrink:0}
 .vkc{background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;border-left:3px solid var(--bd)}
 .vkv{font-size:28px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
 .vkl{font-size:11px;color:var(--mt);font-weight:600;margin-top:2px}
@@ -140,7 +140,7 @@ CFG.forEach(function(c,i){
   var fl;
   if(c.statusCol!==undefined){fl=[['In Progress',3],['Weekly (All)',1],['Monthly (All)',2]]}
   else if(i===5){fl=[['All',3],['Weekly',1],['Monthly',2]]}
-  else if(c.villa){fl=[['All',3],['Cutting',11],['Pending',13],['Ready',10],['Delivered',12]]}
+  else if(c.villa){fl=[['All',3],['Cutting',11],['Polishing',14],['Pending',13],['Ready',10],['Delivered',12]]}
   else{fl=[['Daily',0],['Weekly',1],['Monthly',2]]}
   document.getElementById('sl'+(i+1)).innerHTML=
     '<div class="dh"><div class="di" style="background:rgba('+c.color+',.1)">'+c.icon+'</div>'
@@ -214,18 +214,43 @@ function villaKind(st){
   if(s.indexOf('ready')>-1)return 10;
   if(s.indexOf('deliver')>-1)return 12;
   if(s.indexOf('cut')>-1)return 11;
+  if(s.indexOf('polish')>-1)return 14;
   if(s.indexOf('pending')>-1)return 13;
   return 0;
 }
 function villaList(data){return(data||[]).slice(3).filter(function(r){return r&&String(r[3]||'').trim()!==''})}
+// Summary boxes: each total is found by its HEADING NAME in row 1, so adding or
+// moving columns in the sheet never puts a number under the wrong label.
+var VILLA_BOXES=[
+  {label:'Total Villa',      match:'total villa',     kind:0, color:'var(--c6)'},
+  {label:'Cutting Villas',   match:'cutting',         kind:11,color:'var(--c2)'},
+  {label:'Polishing Villa',  match:'polish',          kind:14,color:'var(--c4)'},
+  {label:'Pending Villas',   match:'pending',         kind:13,color:'var(--c3)'},
+  {label:'Ready to Deliver', match:'ready',           kind:10,color:'var(--c1)'},
+  {label:'Total Delivered Villa',match:'delivered',   kind:12,color:'var(--c0)'}
+];
 function villaSummary(data){
-  var list=villaList(data),n={10:0,11:0,12:0,13:0};
+  var list=villaList(data),n={10:0,11:0,12:0,13:0,14:0};
   list.forEach(function(r){var k=villaKind(r[4]);if(k)n[k]++});
-  var top=(data&&data[1])||[];
-  function pick(i,calc){var v=String(top[i]||'').trim();return v!==''?v:String(calc)}
-  var total=pick(0,list.length);
-  var pend=n[13]||Math.max(0,(parseInt(total)||list.length)-n[10]-n[11]-n[12]);
-  return[[total,'Total Villa'],[pick(1,n[11]),'Cutting Villas'],[pick(2,pend),'Pending Villas'],[pick(3,n[10]),'Ready to Deliver'],[pick(4,n[12]),'Total Delivered Villa']];
+  var head=(data&&data[0])||[],top=(data&&data[1])||[];
+  function fromSheet(match){
+    for(var j=0;j<head.length;j++){
+      var h=String(head[j]||'').toLowerCase().trim();
+      if(!h)continue;
+      if(match==='delivered'&&h.indexOf('ready')>-1)continue;
+      if(h.indexOf(match)>-1){var v=String(top[j]||'').trim();return v===''?null:v}
+    }
+    return null;
+  }
+  var total=fromSheet('total villa');if(total===null)total=String(list.length);
+  return VILLA_BOXES.map(function(b){
+    var v=b.kind===0?total:fromSheet(b.match);
+    if(v===null){
+      if(b.kind===13)v=String(n[13]||Math.max(0,(parseInt(total)||list.length)-n[10]-n[11]-n[12]-n[14]));
+      else v=String(n[b.kind]);
+    }
+    return[v,b.label,b.color];
+  });
 }
 function getRows(idx){
   var c=CFG[idx],data=raw[idx];if(!data||data.length<2)return[];
@@ -244,9 +269,8 @@ function renderSection(idx){
   var c=CFG[idx],rows=getRows(idx);
   document.getElementById('dc'+idx).textContent=rows.length;
   if(c.villa){
-    var kc=['var(--c6)','var(--c2)','var(--c3)','var(--c1)','var(--c0)'];
-    document.getElementById('vk'+idx).innerHTML=villaSummary(raw[idx]).map(function(k,x){
-      return'<div class="vkc" style="border-left-color:'+kc[x]+'"><div class="vkv">'+esc(k[0])+'</div><div class="vkl">'+k[1]+'</div></div>'}).join('');
+    document.getElementById('vk'+idx).innerHTML=villaSummary(raw[idx]).map(function(k){
+      return'<div class="vkc" style="border-left-color:'+k[2]+'"><div class="vkv">'+esc(k[0])+'</div><div class="vkl">'+k[1]+'</div></div>'}).join('');
   }
   var tb=document.getElementById('tb'+idx);
   if(!rows.length){tb.innerHTML='<tr><td colspan="'+(c.heads.length+1)+'"><div class="em">'+c.icon+' No data</div></td></tr>';return}
@@ -272,14 +296,13 @@ function renderAll(){
     if(i===4){renderSection(i);return;}
     var sb=document.getElementById('sb'+i);
     if(!sb){renderSection(i);return;}
-    if(c.villa){var vs=villaSummary(raw[i]);sb.textContent=vs[0][0]+' villas, '+vs[3][0]+' ready to deliver'}
+    if(c.villa){var vs=villaSummary(raw[i]);sb.textContent=vs[0][0]+' villas, '+vs[4][0]+' ready to deliver'}
     else sb.textContent=labels[i]+' — '+rows.length+' items';
     var el=document.getElementById('ml'+i);
     if(!el){renderSection(i);return;}
     if(c.villa){
-      var okc=['var(--c6)','var(--c2)','var(--c3)','var(--c1)','var(--c0)'];
-      el.innerHTML=villaSummary(raw[i]).map(function(k,x){
-        return'<div class="ovk" style="border-left-color:'+okc[x]+'"><span>'+k[1]+'</span><b>'+esc(k[0])+'</b></div>'}).join('');
+      el.innerHTML=villaSummary(raw[i]).map(function(k){
+        return'<div class="ovk" style="border-left-color:'+k[2]+'"><span>'+k[1]+'</span><b>'+esc(k[0])+'</b></div>'}).join('');
       renderSection(i);return;
     }
     var items=rows.slice(0,3);
